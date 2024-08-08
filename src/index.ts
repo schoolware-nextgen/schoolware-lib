@@ -18,17 +18,6 @@ export class Schoolware {
         this.password = password;
         this.domain = "kov.schoolware.be";
     }
-
-    async getTokenSchoolware(): Promise<string> {
-        let response = await axios.post("http://192.168.0.111:3000/token/schoolware", { "user": this.username, "password": this.password })
-        this.token = response.data;
-        return this.token;
-    }
-    async getTokenMicrosoft(): Promise<string> {
-        let response = await axios.post("http://192.168.0.111:3000/token/microsoft", { "user": this.username, "password": this.password })
-        this.token = response.data;
-        return this.token;
-    }
     async makeRequest(url: string): Promise<[AxiosResponse, boolean]> {
         let response = await axios.get(url, {
             headers: {
