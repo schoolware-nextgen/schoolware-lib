@@ -1,7 +1,32 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
+import { chromium } from 'playwright';
 
-type schoolwareDictionary = {
-    [key: string]: string | number | boolean | Date;
+type tasksDict = {
+    vak: string,
+    title: string,
+    type: string,
+    comment: string,
+    deadline: Date
+}
+
+type pointsDict = {
+    vak: string,
+    title: string,
+    comment: string,
+    scoreFloat: number,
+    scoreTotal: number,
+    dw: string,
+    date: Date,
+    type: string
+}
+
+type agendaDict = {
+    vak: String,
+    room: String,
+    title: String,
+    comment: String,
+    date: Date,
+    period: number
 }
 
 export class Schoolware {
@@ -9,30 +34,77 @@ export class Schoolware {
     password: string;
     token: string;
     domain: string;
-    type
 
 
 
-    constructor(username, password, domain = "kov.schoolware.be") {
+    constructor(username = "", password = "", domain = "kov.schoolware.be") {
         this.username = username;
         this.password = password;
-        this.domain = "kov.schoolware.be";
+        this.domain = domain;
     }
 
     async getTokenSchoolware(): Promise<string> {
-        let response = await axios.post("http://192.168.0.111:3000/token/schoolware", { "user": this.username, "password": this.password })
-        this.token = response.data;
-        return this.token;
+
+        if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
+          console.log(`set username and password`);
+          return;
+        }
+        let url = 'https://kov.schoolware.be/webleerling/bin/server.fcgi/RPC/ROUTER/';
+        
+        let options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: `{"action":"WisaUserAPI","method":"Authenticate","data":["${this.username}","${this.password}"],"type":"rpc","tid":1}`
+        };
+        
+        const response = await fetch(url, options)
+
+        let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
+        this.token = cookie;
+        return cookie;
     }
+
     async getTokenMicrosoft(): Promise<string> {
-        let response = await axios.post("http://192.168.0.111:3000/token/microsoft", { "user": this.username, "password": this.password })
-        this.token = response.data;
-        return this.token;
+        if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
+            console.log(`send user and password`);
+            return;
+        }
+
+        const browser = await chromium.launch();
+        const context = await browser.newContext({
+            userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0"
+        })
+        await context.setDefaultTimeout(25000);
+        const page = await context.newPage()
+        try {
+            await page.goto('https://kov.schoolware.be/webleerling/start.html#!fn=llagenda');
+            await page.locator("#ext-comp-1014-btnEl").click()
+            await page.getByRole("textbox").fill(this.username)
+            await page.getByText("Next").click()
+            await page.getByPlaceholder("Password").fill(this.password)
+            await page.getByText("Sign In").click()
+            await page.waitForLoadState()
+            let cookies = await context.cookies("https://kov.schoolware.be");
+            await context.close();
+            await browser.close();
+            this.token = cookies[0].value;
+            return cookies[0].value;
+        } catch (err) {
+            console.log(err);
+            await context.close();
+            await browser.close();
+        }
     }
-    async makeRequest(url: string): Promise<[AxiosResponse, boolean]> {
+
+
+
+
+    async makeRequest(url: string, token: string = undefined): Promise<[AxiosResponse, boolean]> {
         let response = await axios.get(url, {
             headers: {
-                'Cookie': `FPWebSession=${this.token}`,
+                'Cookie': `FPWebSession=${token ? token : this.token}`,
             }
         })
         if (response.status == 200) {
@@ -43,7 +115,12 @@ export class Schoolware {
     }
 
     async checkToken(): Promise<boolean> {
-        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
+        try{
+            var [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
+        }
+        catch (err){
+            return false;
+        }
         if (succes) {
             return true;
         } else {
@@ -52,31 +129,41 @@ export class Schoolware {
 
     }
 
-    async tasks() {
-        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date()}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
+    async tasks(): Promise<tasksDict[]> {
+        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
         if (succes) {
             let rawArray = response.data.data;
 
-            let tasksArray: schoolwareDictionary[] = []
+            let tasksArray: tasksDict[] = [{
+                "vak": "",
+                title: "",
+                type: "",
+                comment: "",
+                deadline: new Date()
+            }]
             rawArray.forEach(element => {
 
                 switch (element.TypePunt) {
                     case 1000:
-                        var type = "taak";
+                        var type: string = "taak";
                         break;
                     case 100:
-                        var type = "toets";
+                        var type: string = "toets";
                         break;
                     case 101:
-                        var type = "hertoets";
+                        var type: string = "hertoets";
                         break;
                 }
+                let vak: string = element.VakNaam
+                let title: string = element.Titel
+                let comment: string = element.Commentaar
+
                 tasksArray.push({
-                    "vak": element.VakNaam,
-                    "title": element.Titel,
+                    "vak": vak,
+                    "title": title,
                     "type": type,
-                    "comment": element.Commentaar,
-                    "deadLine": new Date(element.Tot)
+                    "comment": comment,
+                    "deadline": new Date(element.Tot)
                 })
 
             });
@@ -84,12 +171,12 @@ export class Schoolware {
         }
     }
 
-    async points() {
+    async points(): Promise<pointsDict[]> {
         let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
         if (succes) {
             let rawArray = response.data.data
 
-            let pointsArray: schoolwareDictionary[] = []
+            let pointsArray: pointsDict[] = []
             rawArray.forEach(vak => {
                 vak.Beoordelingen.forEach(element => {
                     if ("BeoordelingWaarde" in element) {
@@ -129,7 +216,8 @@ export class Schoolware {
                         "scoreFloat": score,
                         "scoreTotal": scoreTotal,
                         "dw": dw,
-                        "date": new Date(element.BeoordelingMomentDatum)
+                        "date": new Date(element.BeoordelingMomentDatum),
+                        "type": type
                     })
 
 
@@ -144,17 +232,17 @@ export class Schoolware {
         }
     }
 
-    async agenda() {
-        let start = new Date("2024-06-28T00:00:00.000Z")
-        let end = new Date("2024-06-28T00:00:00.000Z");
+    async agenda(date: Date = new Date()): Promise<agendaDict[]> {
+        let start = new Date(date)
+        let end = new Date(date);
         end.setDate(end.getDate() + 1);
 
         let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
         if (succes) {
             let rawAgenda = response.data.data
 
-            let standardAgenda: schoolwareDictionary[] = []
-            let titelAgenda: schoolwareDictionary[] = []
+            let standardAgenda: agendaDict[] = []
+            let titelAgenda: agendaDict[] = []
 
             rawAgenda.forEach(element => {
                 var period = new Date(element.Van)
@@ -209,32 +297,34 @@ export class Schoolware {
         }
     }
 
-    private createPriorityMap = (priority: schoolwareDictionary[], keyField: string): Map<string | number | boolean | Date, schoolwareDictionary> => {
-        const map = new Map<string | number | boolean | Date, schoolwareDictionary>();
+    private createPriorityMap = (priority: agendaDict[], keyField: string): Map<string | number | boolean | Date, agendaDict> => {
+        const map = new Map<string | number | boolean | Date, agendaDict>();
         for (const item of priority) {
-          map.set(item[keyField], item);
+            map.set(item[keyField], item);
         }
         return map;
-      };
-      
-    private mergeArrays = (normal: schoolwareDictionary[], priority: schoolwareDictionary[], keyField: string): schoolwareDictionary[] => {
+    };
+
+    private mergeArrays = (normal: agendaDict[], priority: agendaDict[], keyField: string): agendaDict[] => {
         const priorityMap = this.createPriorityMap(priority, keyField);
-      
-        const mergedArray: schoolwareDictionary[] = normal.map(item => {
-          const priorityItem = priorityMap.get(item[keyField]);
-          return priorityItem || item;
+
+        const mergedArray: agendaDict[] = normal.map(item => {
+            const priorityItem = priorityMap.get(item[keyField]);
+            return priorityItem || item;
         });
-      
+
         for (const item of priority) {
-          if (!normal.some(normalItem => normalItem[keyField] === item[keyField])) {
-            mergedArray.push(item);
-          }
+            if (!normal.some(normalItem => normalItem[keyField] === item[keyField])) {
+                mergedArray.push(item);
+            }
         }
-      
+
         return mergedArray;
-      };
+    };
 
 }
+
+export { agendaDict, pointsDict, tasksDict }
 
 
 

@@ -1,5 +1,5 @@
 {
-  "name": "schoolware-library",
+  "name": "schoolware-lib",
   "version": "1.0.0",
   "description": "A library for schoolware",
   "main": "index.js",
@@ -9,10 +9,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@playwright/browser-chromium": "^1.45.1",
+    "@playwright/browser-firefox": "^1.45.1",
+    "@playwright/browser-webkit": "^1.45.1",
+    "@types/node": "^20.14.10",
+    "playwright": "^1.45.1",
     "typescript": "^5.5.3"
   },
   "dependencies": {
-    "@types/es6-promise": "^3.3.0",
     "axios": "^1.7.2"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }

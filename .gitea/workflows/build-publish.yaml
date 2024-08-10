@@ -1,0 +1,23 @@
+name: Build image
+on:
+  [push]
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-latest
+    env:
+      DOCKER_USERNAME: gitea
+      RUNNER_TOOL_CACHE: /toolcache # Runner Tool Cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@0609f0983b7a228f052f81ef4c3d6510cae254ad
+        with:
+          version: 6.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run build --if-present
+      - run: pnpm test
