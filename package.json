@@ -1,12 +1,12 @@
 {
   "name": "@schoolware/schoolware-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library for schoolware",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-      "dist"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -27,5 +27,4 @@
   "publishConfig": {
     "registry": "https://git.mb-server.com/api/packages/schoolware-nextgen/npm/"
   }
-
 }
