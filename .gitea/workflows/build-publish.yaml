@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 21
           cache: 'npm'
+          registry-url: 'https://git.mb-server.com/api/packages/schoolware-nextgen/npm/'
       
       - name: Get npm cache directory
         id: npm-cache-dir
@@ -27,7 +28,7 @@ jobs:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-     
+            ${{ runner.os }}-node-                 
 
       - if: steps.npm-cache.outputs.cache-hit != 'true'
         name: Install dependencies if no cache
@@ -36,8 +37,6 @@ jobs:
       - if: steps.npm-cache.outputs.cache-hit == 'true'
         name: Install dependencies if cache
         run: npm i
-
-      - run: npm config set -- '//git.mb-server.com/api/packages/schoolware-nextgen/npm/:_authToken' "${{ secrets.NPM_TOKEN }}"
 
       - run: npm publish --access public
         env:
