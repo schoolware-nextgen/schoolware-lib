@@ -1,5 +1,5 @@
 {
-  "name": "schoolware-lib",
+  "name": "@schoolware/schoolware-lib",
   "version": "1.0.0",
   "description": "A library for schoolware",
   "main": "index.js",
