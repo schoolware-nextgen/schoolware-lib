@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 21
           cache: 'npm'
+          token: ${{ secrets.NPM_TOKEN }}
       
       - name: Get npm cache directory
         id: npm-cache-dir
