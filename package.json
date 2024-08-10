@@ -2,24 +2,27 @@
   "name": "@schoolware/schoolware-lib",
   "version": "1.0.0",
   "description": "A library for schoolware",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+      "dist"
+  ],
   "scripts": {
-    "build": "npx tsc"
+    "build": "tsup",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
+    "axios": "^1.7.2",
     "@playwright/browser-chromium": "^1.45.1",
     "@playwright/browser-firefox": "^1.45.1",
     "@playwright/browser-webkit": "^1.45.1",
     "@types/node": "^20.14.10",
     "playwright": "^1.45.1",
+    "tsup": "^8.2.4",
     "typescript": "^5.5.3"
-  },
-  "dependencies": {
-    "axios": "^1.7.2"
-  },
-  "directories": {
-    "lib": "lib"
   }
+
 }
