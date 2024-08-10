@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 21
           cache: 'npm'
+          registry-url: 'https://gitea.example.com/api/packages/schoolware-nextgen/npm/'
       
       - name: Get npm cache directory
         id: npm-cache-dir
@@ -36,3 +37,7 @@ jobs:
       - if: steps.npm-cache.outputs.cache-hit == 'true'
         name: Install dependencies if cache
         run: npm i
+
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
