@@ -23,6 +23,9 @@
     "playwright": "^1.45.1",
     "tsup": "^8.2.4",
     "typescript": "^5.5.3"
+  },
+  "publishConfig": {
+    "registry": "https://git.mb-server.com/api/packages/schoolware-nextgen/npm/"
   }
 
 }
