@@ -15,7 +15,6 @@ jobs:
         with:
           node-version: 21
           cache: 'npm'
-          registry-url: 'https://git.mb-server.com/api/packages/schoolware-nextgen/npm/'
       
       - name: Get npm cache directory
         id: npm-cache-dir
