@@ -38,6 +38,11 @@ jobs:
         name: Install dependencies if cache
         run: npm i
 
-      - run: npm publish --access public
+      - name: Build
+        run: |
+          npm run build
+          npm version patch
+          npm set "////git.mb-server.com/api/packages/schoolware-nextgen/npm/:_authToken=${{ secrets.NPM_TOKEN }}"
+          npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          credentials: ${{ secrets.NPM_TOKEN }}
