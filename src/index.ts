@@ -49,7 +49,7 @@ export class Schoolware {
           console.log(`set username and password`);
           return;
         }
-        let url = 'https://kov.schoolware.be/webleerling/bin/server.fcgi/RPC/ROUTER/';
+        let url = `https://${this.domain}/webleerling/bin/server.fcgi/RPC/ROUTER/`;
         
         let options = {
           method: 'POST',
@@ -79,14 +79,14 @@ export class Schoolware {
         await context.setDefaultTimeout(25000);
         const page = await context.newPage()
         try {
-            await page.goto('https://kov.schoolware.be/webleerling/start.html#!fn=llagenda');
+            await page.goto(`https://${this.domain}/webleerling/start.html#!fn=llagenda`);
             await page.locator("#ext-comp-1014-btnEl").click()
             await page.getByRole("textbox").fill(this.username)
             await page.getByText("Next").click()
             await page.getByPlaceholder("Password").fill(this.password)
             await page.getByText("Sign In").click()
             await page.waitForLoadState()
-            let cookies = await context.cookies("https://kov.schoolware.be");
+            let cookies = await context.cookies(`https://${this.domain}`);
             await context.close();
             await browser.close();
             this.token = cookies[0].value;
