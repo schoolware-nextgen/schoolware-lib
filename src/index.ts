@@ -46,19 +46,19 @@ export class Schoolware {
     async getTokenSchoolware(): Promise<string> {
 
         if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
-          console.log(`set username and password`);
-          return;
+            console.log(`set username and password`);
+            return;
         }
         let url = `https://${this.domain}/webleerling/bin/server.fcgi/RPC/ROUTER/`;
-        
+
         let options = {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: `{"action":"WisaUserAPI","method":"Authenticate","data":["${this.username}","${this.password}"],"type":"rpc","tid":1}`
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: `{"action":"WisaUserAPI","method":"Authenticate","data":["${this.username}","${this.password}"],"type":"rpc","tid":1}`
         };
-        
+
         const response = await fetch(url, options)
 
         let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
@@ -102,23 +102,29 @@ export class Schoolware {
 
 
     async makeRequest(url: string, token: string = undefined): Promise<[AxiosResponse, boolean]> {
-        let response = await axios.get(url, {
-            headers: {
-                'Cookie': `FPWebSession=${token ? token : this.token}`,
+        try {
+            let response = await axios.get(url, {
+                headers: {
+                    'Cookie': `FPWebSession=${token ? token : this.token}`,
+                }
+            })
+
+            if (response.status == 200) {
+                return [response, true]
+            } else {
+                return [response, false]
             }
-        })
-        if (response.status == 200) {
-            return [response, true]
-        } else {
-            return [response, false]
+        }
+        catch (err) {
+            console.log(err);
         }
     }
 
     async checkToken(): Promise<boolean> {
-        try{
+        try {
             var [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
         }
-        catch (err){
+        catch (err) {
             return false;
         }
         if (succes) {
@@ -294,6 +300,8 @@ export class Schoolware {
             });
             const mergedArray = this.mergeArrays(standardAgenda, titelAgenda, "period");
             return mergedArray
+        } else {
+            console.log(`ERROR: agend ${response}`);
         }
     }
 
