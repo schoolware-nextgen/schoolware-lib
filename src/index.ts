@@ -43,11 +43,12 @@ export class Schoolware {
         this.domain = domain;
     }
 
-    async getTokenSchoolware(): Promise<string> {
+    async getTokenSchoolware(): Promise<[string, boolean, number]> {
 
         if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
             console.log(`set username and password`);
-            return;
+            
+            return ["", false, 400];
         }
         let url = `https://${this.domain}/webleerling/bin/server.fcgi/RPC/ROUTER/`;
 
@@ -60,16 +61,21 @@ export class Schoolware {
         };
 
         const response = await fetch(url, options)
-
+        if(response.status == 200){
         let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
         this.token = cookie;
-        return cookie;
+        return [cookie, true, response.status];
+        } else {
+            return ["", false, response.status];
+        }
+        
+        
     }
 
-    async getTokenMicrosoft(): Promise<string> {
+    async getTokenMicrosoft(): Promise<[string, boolean, number]> {
         if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
             console.log(`send user and password`);
-            return;
+            return ["", false, 400];
         }
 
         const browser = await chromium.launch();
@@ -90,18 +96,19 @@ export class Schoolware {
             await context.close();
             await browser.close();
             this.token = cookies[0].value;
-            return cookies[0].value;
+            return [cookies[0].value, true, 200];
         } catch (err) {
             console.log(err);
             await context.close();
             await browser.close();
+            return ["", false, 500];
         }
     }
 
 
 
 
-    async makeRequest(url: string, token: string = undefined): Promise<[AxiosResponse, boolean]> {
+    async makeRequest(url: string, token: string = undefined): Promise<[AxiosResponse, boolean, number]> {
         try {
             let response = await axios.get(url, {
                 headers: {
@@ -110,9 +117,9 @@ export class Schoolware {
             })
 
             if (response.status == 200) {
-                return [response, true]
+                return [response, true, response.status];
             } else {
-                return [response, false]
+                return [response, false, response.status]
             }
         }
         catch (err) {
@@ -120,23 +127,23 @@ export class Schoolware {
         }
     }
 
-    async checkToken(): Promise<boolean> {
+    async checkToken(): Promise<[boolean, number]> {
         try {
-            var [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
+            var [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
         }
         catch (err) {
-            return false;
+            return [false,status];
         }
         if (succes) {
-            return true;
+            return [true,status];
         } else {
-            return false;
+            return [false,status];
         }
 
     }
 
-    async tasks(): Promise<tasksDict[]> {
-        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
+    async tasks(): Promise<[tasksDict[], boolean, number]> {
+        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
         if (succes) {
             let rawArray = response.data.data;
 
@@ -173,12 +180,22 @@ export class Schoolware {
                 })
 
             });
-            return tasksArray
+            return [tasksArray, succes, status]
+        } else{
+            let tasksArray: tasksDict[] = [{
+                "vak": "",
+                title: "",
+                type: "",
+                comment: "",
+                deadline: new Date()
+            }]
+            return [tasksArray, succes, status]
         }
+        
     }
 
-    async points(): Promise<pointsDict[]> {
-        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
+    async points(): Promise<[pointsDict[], boolean, number]> {
+        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
         if (succes) {
             let rawArray = response.data.data
 
@@ -234,16 +251,19 @@ export class Schoolware {
                 const dateB = b.date as Date;
                 return dateB.getTime() - dateA.getTime();
             });
-            return pointsArray
+            return [pointsArray, succes, status]
+        } else {
+            let pointsArray: pointsDict[] = []
+            return [pointsArray, succes, status]
         }
     }
 
-    async agenda(date: Date = new Date()): Promise<agendaDict[]> {
+    async agenda(date: Date = new Date()): Promise<[agendaDict[], boolean, number]> {
         let start = new Date(date)
         let end = new Date(date);
         end.setDate(end.getDate() + 1);
 
-        let [response, succes] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
+        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
         if (succes) {
             let rawAgenda = response.data.data
 
@@ -287,7 +307,9 @@ export class Schoolware {
                     "title": element.Titel,
                     "comment": element.Commentaar,
                     "date": new Date(element.Van),
-                    "period": periodCode
+                    "period": periodCode,
+                    "van": new Date(element.Van),
+                    "tot": new Date(element.Tot)
                 }
 
                 if (element.TypePunt == 1) {
@@ -299,9 +321,11 @@ export class Schoolware {
 
             });
             const mergedArray = this.mergeArrays(standardAgenda, titelAgenda, "period");
-            return mergedArray
+            return [mergedArray, succes, status]
         } else {
             console.log(`ERROR: agend ${response}`);
+            let standardAgenda: agendaDict[] = []
+            return [standardAgenda, succes, status]
         }
     }
 
