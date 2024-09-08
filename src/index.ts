@@ -62,9 +62,9 @@ export class Schoolware {
 
         const response = await fetch(url, options)
         if(response.status == 200){
-        let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
-        this.token = cookie;
-        return [cookie, true, response.status];
+            let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
+            this.token = cookie;
+            return [cookie, true, response.status];
         } else {
             return ["", false, response.status];
         }
@@ -129,12 +129,12 @@ export class Schoolware {
 
     async checkToken(): Promise<[boolean, number]> {
         try {
-            var [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
+            var [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
         }
         catch (err) {
             return [false,status];
         }
-        if (succes) {
+        if (success) {
             return [true,status];
         } else {
             return [false,status];
@@ -143,8 +143,8 @@ export class Schoolware {
     }
 
     async tasks(): Promise<[tasksDict[], boolean, number]> {
-        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
-        if (succes) {
+        let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
+        if (success) {
             let rawArray = response.data.data;
 
             let tasksArray: tasksDict[] = [{
@@ -180,7 +180,7 @@ export class Schoolware {
                 })
 
             });
-            return [tasksArray, succes, status]
+            return [tasksArray, success, status]
         } else{
             let tasksArray: tasksDict[] = [{
                 "vak": "",
@@ -189,14 +189,14 @@ export class Schoolware {
                 comment: "",
                 deadline: new Date()
             }]
-            return [tasksArray, succes, status]
+            return [tasksArray, success, status]
         }
         
     }
 
     async points(): Promise<[pointsDict[], boolean, number]> {
-        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
-        if (succes) {
+        let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
+        if (success) {
             let rawArray = response.data.data
 
             let pointsArray: pointsDict[] = []
@@ -251,10 +251,10 @@ export class Schoolware {
                 const dateB = b.date as Date;
                 return dateB.getTime() - dateA.getTime();
             });
-            return [pointsArray, succes, status]
+            return [pointsArray, success, status]
         } else {
             let pointsArray: pointsDict[] = []
-            return [pointsArray, succes, status]
+            return [pointsArray, success, status]
         }
     }
 
@@ -263,8 +263,8 @@ export class Schoolware {
         let end = new Date(date);
         end.setDate(end.getDate() + 1);
 
-        let [response, succes, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
-        if (succes) {
+        let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
+        if (success) {
             let rawAgenda = response.data.data
 
             let standardAgenda: agendaDict[] = []
@@ -321,11 +321,11 @@ export class Schoolware {
 
             });
             const mergedArray = this.mergeArrays(standardAgenda, titelAgenda, "period");
-            return [mergedArray, succes, status]
+            return [mergedArray, success, status]
         } else {
             console.log(`ERROR: agend ${response}`);
             let standardAgenda: agendaDict[] = []
-            return [standardAgenda, succes, status]
+            return [standardAgenda, success, status]
         }
     }
 
