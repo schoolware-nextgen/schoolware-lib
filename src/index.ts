@@ -108,23 +108,24 @@ export class Schoolware {
 
 
 
-    async makeRequest(url: string, token: string = undefined): Promise<[AxiosResponse, boolean, number]> {
-        try {
-            let response = await axios.get(url, {
+    async makeRequest(url: string, token: string = undefined) {
+
+            return await axios.get(url, {
                 headers: {
                     'Cookie': `FPWebSession=${token ? token : this.token}`,
                 }
+            }).then(response => {
+                if (response.status == 200) {
+                    return [response, true, response.status];
+                } else {
+                    return [response, false, response.status]
+                }
             })
+            .catch(error => {
+                return [error.response, false, error.respone.status]
+            })
+            
 
-            if (response.status == 200) {
-                return [response, true, response.status];
-            } else {
-                return [response, false, response.status]
-            }
-        }
-        catch (err) {
-            console.log(err);
-        }
     }
 
     async checkToken(): Promise<[boolean, number]> {
