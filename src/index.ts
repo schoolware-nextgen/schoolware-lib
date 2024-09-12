@@ -115,9 +115,9 @@ export class Schoolware {
                 }
             }).then(response => {
                 if (response.status == 200) {
-                    return [response, true, response.status];
+                    return [response.json(), true, response.status];
                 } else {
-                    return [response, false, response.status]
+                    return [response.json(), false, response.status]
                 }
             })
             .catch(error => {
