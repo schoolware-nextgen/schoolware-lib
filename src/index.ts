@@ -122,6 +122,7 @@ export class Schoolware {
                 }
             })
             .catch(error => {
+                console.log(error);
                 return [error.response, false, error.respone.status]
             })
             
