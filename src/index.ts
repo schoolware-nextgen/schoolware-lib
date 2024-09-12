@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from "axios";
 import { chromium } from 'playwright';
 
 type tasksDict = {
@@ -110,7 +109,7 @@ export class Schoolware {
 
     async makeRequest(url: string, token: string = undefined) {
 
-            return await axios.get(url, {
+            return await fetch(url, {
                 headers: {
                     'Cookie': `FPWebSession=${token ? token : this.token}`,
                 }
