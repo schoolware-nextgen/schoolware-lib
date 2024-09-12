@@ -113,16 +113,17 @@ export class Schoolware {
                 headers: {
                     'Cookie': `FPWebSession=${token ? token : this.token}`,
                 }
-            }).then(response => {
+            }).then(async response => {
                 if (response.status == 200) {
-                    return [response.json(), true, response.status];
+                    let data = await response.json();
+                    return [data, true, response.status];
                 } else {
-                    return [response.json(), false, response.status]
+                    return [{}, false, response.status]
                 }
             })
             .catch(error => {
                 console.log(error);
-                return [error.response, false, error.respone.status]
+                return [{}, false, error.status]
             })
             
 
@@ -146,7 +147,7 @@ export class Schoolware {
     async tasks(): Promise<[tasksDict[], boolean, number]> {
         let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?_dc=1665240724814&MinVan=${new Date().toISOString().split('T')[0]}&IsTaakOfToets=true`) //todo add .toISOString().split('T')[0] to date not for testing
         if (success) {
-            let rawArray = response.data.data;
+            let rawArray = response.data;
 
             let tasksArray: tasksDict[] = [{
                 "vak": "",
@@ -198,7 +199,7 @@ export class Schoolware {
     async points(): Promise<[pointsDict[], boolean, number]> {
         let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/PuntenbladGridLeerling?BeoordelingMomentVan=1990-09-01+00:00:00`)
         if (success) {
-            let rawArray = response.data.data
+            let rawArray = response.data
 
             let pointsArray: pointsDict[] = []
             rawArray.forEach(vak => {
@@ -266,7 +267,7 @@ export class Schoolware {
 
         let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/AgendaPunt/?MaxVan=${end.toISOString().split('T')[0]}&MinTot=${start.toISOString().split('T')[0]}`)
         if (success) {
-            let rawAgenda = response.data.data
+            let rawAgenda = response.data
 
             let standardAgenda: agendaDict[] = []
             let titelAgenda: agendaDict[] = []
