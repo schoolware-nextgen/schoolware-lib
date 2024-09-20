@@ -41,8 +41,8 @@ jobs:
       - name: Build
         run: |
           npm run build
-          npm config set @schoolware:registry=https://git.mb-server.com/api/packages/schoolware-nextgen/npm
-          npm set "//git.mb-server.com/api/packages/schoolware-nextgen/npm/:_authToken=${{ secrets.NPM_TOKEN }}"
-          npm publish --access public
-        env:
-          credentials: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Release
+        uses: tobua/release-npm-action@v3
+        with:
+          NPM_TOKEN: ${{ secrets.NPMJS_TOKEN }}
