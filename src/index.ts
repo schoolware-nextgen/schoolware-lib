@@ -76,12 +76,11 @@ export class Schoolware {
             console.log(`send user and password`);
             return ["", false, 400];
         }
-
         const browser = await chromium.launch();
         const context = await browser.newContext({
             userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0"
         })
-        await context.setDefaultTimeout(25000);
+        context.setDefaultTimeout(25000);
         const page = await context.newPage()
         try {
             await page.goto(`https://${this.domain}/webleerling/start.html#!fn=llagenda`);
@@ -108,7 +107,6 @@ export class Schoolware {
 
 
     async makeRequest(url: string, token: string = undefined) {
-
             return await fetch(url, {
                 headers: {
                     'Cookie': `FPWebSession=${token ? token : this.token}`,
