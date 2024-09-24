@@ -16,12 +16,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 21
-          cache: 'npm'
-          token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Install dependencies if cache
-        run: npm i
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ matrix.bun }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.bun }}-bun-
 
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun i
       - name: Build
         run: |
           npm run build
