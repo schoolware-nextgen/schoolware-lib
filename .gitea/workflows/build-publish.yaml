@@ -13,9 +13,6 @@ jobs:
       RUNNER_TOOL_CACHE: /toolcache # Runner Tool Cache
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 21
 
       - uses: actions/cache@v4
         with:
@@ -30,7 +27,7 @@ jobs:
         run: bun i
       - name: Build
         run: |
-          npm run build
+          bun run build
       
       - name: Release
         uses: tobua/release-npm-action@v3
