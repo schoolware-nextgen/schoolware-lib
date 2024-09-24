@@ -338,7 +338,6 @@ export class Schoolware {
     async berichten() {
         let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/WebsiteBericht?MAXVAN=TOMORROW&MINTOT=TODAY&sort=starred%20desc%2C%20van%20desc`)
         let berichten: berichtenDict[] = [];
-        console.log(response.data)
         response.data.forEach((element) => {
             berichten.push({
                 titel: element.Titel,
