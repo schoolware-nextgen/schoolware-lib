@@ -28,6 +28,12 @@ type agendaDict = {
     period: number
 }
 
+type berichtenDict = {
+    titel: String,
+    bericht: String,
+    date: Date
+}
+
 export class Schoolware {
     username: string;
     password: string;
@@ -148,7 +154,7 @@ export class Schoolware {
             let rawArray = response.data;
 
             let tasksArray: tasksDict[] = [{
-                "vak": "",
+                vak: "",
                 title: "",
                 type: "",
                 comment: "",
@@ -327,6 +333,21 @@ export class Schoolware {
             let standardAgenda: agendaDict[] = []
             return [standardAgenda, success, status]
         }
+    }
+
+    async berichten() {
+        let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/WebsiteBericht?MAXVAN=TOMORROW&MINTOT=TODAY&sort=starred%20desc%2C%20van%20desc`)
+        let berichten: berichtenDict[] = [];
+        console.log(response.data)
+        response.data.forEach((element) => {
+            berichten.push({
+                titel: element.Titel,
+                bericht: element.Bericht,
+                date: new Date(element.CreatedOn)
+            })
+        })
+        return [berichten, success, status]
+
     }
 
     private createPriorityMap = (priority: agendaDict[], keyField: string): Map<string | number | boolean | Date, agendaDict> => {

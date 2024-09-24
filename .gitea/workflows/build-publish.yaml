@@ -1,6 +1,8 @@
 name: Build image
 on:
-  [push]
+  push:
+    tags:
+      - "v*.*.*"
 jobs:
   build-image:
     runs-on: ubuntu-latest
@@ -16,26 +18,8 @@ jobs:
           node-version: 21
           cache: 'npm'
           token: ${{ secrets.NPM_TOKEN }}
-      
-      - name: Get npm cache directory
-        id: npm-cache-dir
-        shell: bash
-        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
-      
-      - uses: actions/cache@v3
-        id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-                 
 
-      - if: steps.npm-cache.outputs.cache-hit != 'true'
-        name: Install dependencies if no cache
-        run: npm ci
-
-      - if: steps.npm-cache.outputs.cache-hit == 'true'
-        name: Install dependencies if cache
+      - name: Install dependencies if cache
         run: npm i
 
       - name: Build
