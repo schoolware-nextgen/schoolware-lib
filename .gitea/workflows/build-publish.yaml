@@ -14,6 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+          registry-url: 'https://registry.npmjs.org'
+
       - uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
@@ -30,8 +35,6 @@ jobs:
           bun run build
       
       - name: Release
-        uses: tobua/release-npm-action@v3
-        with:
-          GITHUB_TOKEN: ${{ secrets.NPM_TOKEN  }}
-          NPM_TOKEN: ${{ secrets.NPMJS_TOKEN }}
-          
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
