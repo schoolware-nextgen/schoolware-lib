@@ -16,7 +16,8 @@ type pointsDict = {
     scoreTotal: number,
     dw: string,
     date: Date,
-    type: string
+    type: string,
+    gewicht: number
 }
 
 type agendaDict = {
@@ -238,6 +239,12 @@ export class Schoolware {
                         type = "toets"
                     }
 
+                    if(element.hasOwnProperty("BeoordelingMomentCategorieGewicht")){
+                    var gewicht = element.BeoordelingMomentCategorieGewicht;
+                    }else{
+                        gewicht = 0;
+                    }
+
                     pointsArray.push({
                         "vak": element.IngerichtVakNaamgebruiker,
                         "title": element.BeoordelingMomentOmschrijving,
@@ -246,7 +253,8 @@ export class Schoolware {
                         "scoreTotal": scoreTotal,
                         "dw": dw,
                         "date": new Date(element.BeoordelingMomentDatum),
-                        "type": type
+                        "type": type,
+                        "gewicht": gewicht
                     })
 
 
