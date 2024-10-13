@@ -53,7 +53,7 @@ export class Schoolware {
 
         if (typeof (this.username) != 'string' || typeof (this.password) != 'string') {
             console.log(`set username and password`);
-            
+
             return ["", false, 400];
         }
         let url = `https://${this.domain}/webleerling/bin/server.fcgi/RPC/ROUTER/`;
@@ -67,15 +67,15 @@ export class Schoolware {
         };
 
         const response = await fetch(url, options)
-        if(response.status == 200){
+        if (response.status == 200) {
             let cookie = response.headers.getSetCookie()[0].split(";")[0].split("=")[1];
             this.token = cookie;
             return [cookie, true, response.status];
         } else {
             return ["", false, response.status];
         }
-        
-        
+
+
     }
 
     async getTokenMicrosoft(): Promise<[string, boolean, number]> {
@@ -114,23 +114,23 @@ export class Schoolware {
 
 
     async makeRequest(url: string, token: string = undefined) {
-            return await fetch(url, {
-                headers: {
-                    'Cookie': `FPWebSession=${token ? token : this.token}`,
-                }
-            }).then(async response => {
-                if (response.status == 200) {
-                    let data = await response.json();
-                    return [data, true, response.status];
-                } else {
-                    return [{}, false, response.status]
-                }
-            })
+        return await fetch(url, {
+            headers: {
+                'Cookie': `FPWebSession=${token ? token : this.token}`,
+            }
+        }).then(async response => {
+            if (response.status == 200) {
+                let data = await response.json();
+                return [data, true, response.status];
+            } else {
+                return [{}, false, response.status]
+            }
+        })
             .catch(error => {
                 console.log(error);
                 return [{}, false, error.status]
             })
-            
+
 
     }
 
@@ -139,12 +139,12 @@ export class Schoolware {
             var [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/myschoolwareaccount`)
         }
         catch (err) {
-            return [false,status];
+            return [false, status];
         }
         if (success) {
-            return [true,status];
+            return [true, status];
         } else {
-            return [false,status];
+            return [false, status];
         }
 
     }
@@ -188,7 +188,7 @@ export class Schoolware {
 
             });
             return [tasksArray, success, status]
-        } else{
+        } else {
             let tasksArray: tasksDict[] = [{
                 "vak": "",
                 title: "",
@@ -198,7 +198,7 @@ export class Schoolware {
             }]
             return [tasksArray, success, status]
         }
-        
+
     }
 
     async points(): Promise<[pointsDict[], boolean, number]> {
@@ -239,9 +239,9 @@ export class Schoolware {
                         type = "toets"
                     }
 
-                    if(element.hasOwnProperty("BeoordelingMomentCategorieGewicht")){
-                    var gewicht = element.BeoordelingMomentCategorieGewicht;
-                    }else{
+                    if (element.hasOwnProperty("BeoordelingMomentCategorieGewicht")) {
+                        var gewicht = element.BeoordelingMomentCategorieGewicht;
+                    } else {
                         gewicht = 0;
                     }
 
@@ -346,14 +346,20 @@ export class Schoolware {
     async berichten() {
         let [response, success, status] = await this.makeRequest(`https://${this.domain}/webleerling/bin/server.fcgi/REST/WebsiteBericht?MAXVAN=TOMORROW&MINTOT=TODAY&sort=starred%20desc%2C%20van%20desc`)
         let berichten: berichtenDict[] = [];
-        response.data.forEach((element) => {
-            berichten.push({
-                titel: element.Titel,
-                bericht: element.Bericht,
-                date: new Date(element.CreatedOn)
+        if (success) {
+            response.data.forEach((element) => {
+                berichten.push({
+                    titel: element.Titel,
+                    bericht: element.Bericht,
+                    date: new Date(element.CreatedOn)
+                })
             })
-        })
-        return [berichten, success, status]
+            return [berichten, success, status]
+        }
+        else {
+            console.log(`ERROR: berichten ${response}`);
+            return [berichten, success, status]
+        }
 
     }
 
